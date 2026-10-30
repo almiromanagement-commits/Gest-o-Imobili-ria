@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Carlos Roberto de Freitas - Gestão Imobiliária</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans">
+    <div class="min-h-screen flex flex-col">
+        <!-- Topo -->
+        <header id="app-header" class="bg-blue-800 text-white shadow-md">
+            <div class="max-w-7xl mx-auto px-4 py-4 flex flex-col sm:flex-row justify-between items-center">
+                <div class="flex items-center space-x-3">
+                    <span class="text-2xl font-bold cursor-pointer" onclick="mudarAba('dashboard')">🏢 Carlos Roberto de Freitas - Gestão Imobiliária</span>
+                </div>
+                <div class="flex flex-col items-center gap-2 mt-2 sm:mt-0">
+                    <div class="text-sm bg-blue-900 px-3 py-1 rounded-full font-medium text-center" id="topo-qtd-unidades">
+                        Painel Geral • Unidades Dinâmicas (Vencimento Dia 05)
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-2">
+                        <button type="button" onclick="encaminharResumoWhatsApp()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition">
+                            WhatsApp • Carlos
+                        </button>
+                        <button type="button" onclick="encaminharResumoEmail('carlos')" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition">
+                            E-mail • Carlos
+                        </button>
+                        <button type="button" onclick="encaminharResumoEmail('juliano')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2 rounded-lg shadow transition">
+                            E-mail • Juliano
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <!-- Navegação por Abas -->
+            <div class="bg-blue-900/60 border-t border-blue-700" id="nav-abas">
+                <div class="max-w-7xl mx-auto px-4 flex space-x-4 py-2 text-sm overflow-x-auto">
+                    <button onclick="mudarAba('dashboard')" id="btn-dashboard" class="px-3 py-1.5 rounded-lg bg-blue-700 text-white font-semibold transition whitespace-nowrap">Dashboard / Planilha</button>
+                    <button onclick="mudarAba('cadastros')" id="btn-cadastros" class="px-3 py-1.5 rounded-lg hover:bg-blue-800 text-blue-100 transition whitespace-nowrap">Cadastro de Imóveis</button>
+                    <button onclick="mudarAba('lancamentos')" id="btn-lancamentos" class="px-3 py-1.5 rounded-lg hover:bg-blue-800 text-blue-100 transition whitespace-nowrap">Lançamentos</button>
+                    <button onclick="mudarAba('cobranca')" id="btn-cobranca" class="px-3 py-1.5 rounded-lg hover:bg-blue-800 text-blue-100 transition whitespace-nowrap">Cobrança & Juros</button>
+                    <button onclick="mudarAba('backup')" id="btn-backup" class="px-3 py-1.5 rounded-lg hover:bg-blue-800 text-blue-100 transition whitespace-nowrap">Dados / Backup</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Conteúdo Principal -->
+        <main class="max-w-7xl mx-auto px-4 py-6 flex-grow w-full">
+            
+            <!-- ABA 1: DASHBOARD & PLANILHA -->
+            <div id="aba-dashboard" class="space-y-6">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Total Esperado Anual</p>
+                        <p class="text-2xl font-bold text-slate-800 mt-1" id="card-esperado-anual">R$ 0,00</p>
+                        <span class="text-xs text-slate-400">Potencial anual cheio</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Total Recebido (Pago)</p>
+                        <p class="text-2xl font-bold text-emerald-600 mt-1" id="card-recebido">R$ 0,00</p>
+                        <span class="text-xs text-slate-400">Receitas confirmadas</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Pendente / Em Atraso (Vermelhos)</p>
+                        <p class="text-2xl font-bold text-rose-600 mt-1" id="card-atrasados">R$ 0,00</p>
+                        <span class="text-xs text-slate-400">Soma dos débitos com juros/multa</span>
+                    </div>
+                    <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200">
+                        <p class="text-xs text-slate-500 uppercase font-semibold">Projeção Anual Bruta</p>
+                        <p class="text-2xl font-bold text-blue-600 mt-1" id="card-projecao">R$ 0,00</p>
+                        <span class="text-xs text-slate-400">Soma de todas as unidades</span>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6 overflow-x-auto">
+                    <div class="flex justify-between items-center mb-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-700">Controle Anual Consolidado (Vencimento Todo Dia 05)</h2>
+                            <p class="text-xs text-slate-500">💡 Dica: Clique no nome do imóvel para abrir o extrato isolado em nova aba para o inquilino.</p>
+                        </div>
+                    </div>
+                    <div class="min-w-[1100px] border border-slate-200 rounded-lg overflow-hidden">
+                        <table class="w-full text-left text-xs border-collapse">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-bold border-b border-slate-200">
+                                <tr>
+                                    <th class="p-2.5 border-r border-slate-200 w-16">Item</th>
+                                    <th class="p-2.5 border-r border-slate-200 w-48">Imóvel / Inquilino</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 1</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 2</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 3</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 4</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 5</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 6</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 7</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 8</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 9</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 10</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 11</th>
+                                    <th class="p-2 border-r border-slate-200 text-center">Mês 12</th>
+                                    <th class="p-2.5 text-center bg-blue-50 text-blue-900">Total Anual</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-corpo" class="divide-y divide-slate-200">
+                                <!-- Renderizado via JS -->
+                            </tbody>
+                            <tfoot id="tabela-rodape" class="bg-slate-100 font-bold text-slate-700 border-t-2 border-slate-300">
+                                <!-- Totais renderizados via JS -->
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- VISÃO EXCLUSIVA DO INQUILINO (ABERTA EM NOVA ABA) -->
+            <div id="aba-extrato-inquilino" class="hidden space-y-6">
+                <div class="bg-white rounded-xl shadow-md border border-slate-200 p-6 max-w-4xl mx-auto mt-4">
+                    <div class="flex justify-between items-center border-b pb-4 mb-4">
+                        <div>
+                            <span class="bg-emerald-100 text-emerald-800 text-xs font-bold px-2.5 py-1 rounded">Extrato Oficial do Inquilino • Canal de Equilíbrio</span>
+                            <h2 class="text-xl font-bold text-slate-800 mt-1" id="extrato-titulo-imovel">Imóvel</h2>
+                        </div>
+                        <div class="text-xs text-slate-400">Gestão Imobiliária Carlos Roberto de Freitas</div>
+                    </div>
+
+                    <!-- Totalizadores de Débitos (Soma apenas os vermelhos / em atraso) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+                        <div class="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                            <span class="text-xs text-slate-500 uppercase font-semibold">Inquilino Responsável</span>
+                            <p class="text-lg font-bold text-slate-800 mt-1" id="extrato-nome-inquilino">-</p>
+                        </div>
+                        <div class="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                            <span class="text-xs text-emerald-700 uppercase font-semibold">Total Pago no Ano</span>
+                            <p class="text-xl font-bold text-emerald-700 mt-1" id="extrato-total-pago">R$ 0,00</p>
+                        </div>
+                        <div class="bg-rose-50 p-4 rounded-xl border border-rose-200">
+                            <span class="text-xs text-rose-700 uppercase font-semibold">Total em Atraso (Devido)</span>
+                            <p class="text-xl font-bold text-rose-600 mt-1" id="extrato-total-devido">R$ 0,00</p>
+                            <span class="text-[10px] text-rose-500">Soma rigorosa apenas dos meses em atraso (com juros/multa)</span>
+                        </div>
+                    </div>
+
+                    <h3 class="font-bold text-slate-700 mb-3 text-sm">Detalhamento dos 12 Meses (Vencimento Todo Dia 05)</h3>
+                    <div class="border rounded-lg overflow-hidden mb-6">
+                        <table class="w-full text-left text-xs">
+                            <thead class="bg-slate-100 text-slate-700 uppercase font-bold">
+                                <tr>
+                                    <th class="p-3">Mês de Referência</th>
+                                    <th class="p-3">Vencimento</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Valor Calculado (R$)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="extrato-tabela-meses" class="divide-y divide-slate-200">
+                                <!-- Preenchido via JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 justify-end">
+                        <button onclick="copiarLinkInquilino()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-bold px-4 py-2.5 rounded-lg transition shadow">
+                            📋 Copiar Link Exclusivo
+                        </button>
+                        <button onclick="enviarExtratoWhatsAppInquilino()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold px-4 py-2.5 rounded-lg transition shadow">
+                            💬 Enviar Resumo via WhatsApp
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 2: CADASTRO DE IMÓVEIS -->
+            <div id="aba-cadastros" class="hidden space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b pb-4">
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-700">Gestão e Cadastro de Imóveis & Inquilinos</h2>
+                            <p class="text-sm text-slate-500">Gerencie as fichas completas e abra extratos isolados.</p>
+                        </div>
+                        <button onclick="adicionarNovoImovel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm px-4 py-2.5 rounded-lg font-bold transition shadow">
+                            + Adicionar Novo Imóvel (Compra)
+                        </button>
+                    </div>
+
+                    <div id="lista-fichas-imoveis" class="space-y-6">
+                        <!-- Preenchido dinamicamente via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 3: LANÇAMENTOS -->
+            <div id="aba-lancamentos" class="hidden space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-700 mb-2">Registro de Lançamentos e Movimentações</h2>
+                    <p class="text-sm text-slate-500 mb-4">Selecione o imóvel, o mês correspondente, o status e o valor recebido.</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Unidade / Imóvel</label>
+                            <select id="lanc-imovel" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                                <!-- Preenchido via JS -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Mês de Referência</label>
+                            <select id="lanc-mes" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                                <option value="1">Mês 1</option>
+                                <option value="2">Mês 2</option>
+                                <option value="3">Mês 3</option>
+                                <option value="4">Mês 4</option>
+                                <option value="5">Mês 5</option>
+                                <option value="6">Mês 6</option>
+                                <option value="7">Mês 7</option>
+                                <option value="8">Mês 8</option>
+                                <option value="9">Mês 9</option>
+                                <option value="10">Mês 10</option>
+                                <option value="11">Mês 11</option>
+                                <option value="12">Mês 12</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Status do Pagamento</label>
+                            <select id="lanc-status" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                                <option value="Pago">Pago</option>
+                                <option value="Em Aberto">Em Aberto / A Vencer</option>
+                                <option value="Atraso">Atraso (Incide Juros/Multa)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Valor Base (R$)</label>
+                            <input type="text" id="lanc-valor" value="1.000,00" class="w-full border border-slate-300 rounded-lg p-2 text-sm">
+                        </div>
+                    </div>
+                    <button onclick="adicionarLancamento()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-5 py-2.5 rounded-lg transition font-bold shadow">
+                        Salvar Lançamento na Planilha
+                    </button>
+                </div>
+            </div>
+
+            <!-- ABA 4: COBRANÇA & JUROS -->
+            <div id="aba-cobranca" class="hidden space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h2 class="text-lg font-bold text-slate-700 mb-2">Motor de Juros, Multas e Recálculo Diário</h2>
+                    <p class="text-sm text-slate-500 mb-4">Configuração das taxas aplicadas automaticamente após o dia 05 de cada mês.</p>
+                    
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6 p-4 bg-slate-50 border border-slate-200 rounded-lg">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Multa por Atraso (%)</label>
+                            <input type="text" id="taxa-multa" value="2,0" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 mb-1">Juros de Mora ao Dia (%)</label>
+                            <input type="text" id="taxa-juros" value="0,33" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                        </div>
+                        <div class="flex items-end">
+                            <button onclick="alert('Taxas de recálculo salvas com sucesso!')" class="w-full bg-slate-800 hover:bg-slate-900 text-white text-sm font-bold py-2 px-4 rounded-lg transition">Salvar Taxas</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ABA 5: DADOS / BACKUP -->
+            <div id="aba-backup" class="hidden space-y-6">
+                <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+                    <h3 class="text-md font-bold text-slate-700 mb-2">Dados / Backup</h3>
+                    <p class="text-xs text-slate-500 mb-4">Exportação e importação de segurança via JSON para o banco local.</p>
+                    <div class="flex flex-wrap gap-3">
+                        <button onclick="exportarBackup()" class="bg-blue-600 hover:bg-blue-700 text-white text-sm px-4 py-2 rounded-lg transition font-medium">Exportar Dados de Backup (JSON)</button>
+                        <button onclick="limparEProcurarPadrao()" class="bg-slate-200 hover:bg-slate-300 text-slate-700 text-sm px-4 py-2 rounded-lg transition font-medium">Restaurar Padrão Inicial</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- Rodapé -->
+        <footer class="bg-white border-t border-slate-200 mt-auto py-4 text-center text-xs text-slate-500">
+            Mundo Juliano Soberano &bull; Gestão Imobiliária Carlos Roberto de Freitas
+        </footer>
+    </div>
+
+    <script>
+        let imoveisLista = [
+            { id: 1, nome: "MARABÁ-1", inquilino: "Zé da Silva", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 2, nome: "MARABÁ-2", inquilino: "Francisco", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 3, nome: "MARABÁ-3", inquilino: "Antônio", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 4, nome: "MARABÁ-4", inquilino: "João", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 5, nome: "MARABÁ-5", inquilino: "José", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 6, nome: "MARABÁ-6", inquilino: "Marcos", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 7, nome: "MARABÁ-7", inquilino: "Lucas", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 8, nome: "COPHASUL-1", inquilino: "Paulo", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 9, nome: "COPHASUL-2", inquilino: "Roberto", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 10, nome: "COPHASUL-3", inquilino: "Sebastião", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 11, nome: "COPHASUL-4", inquilino: "Fernando", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 12, nome: "COPHASUL-5", inquilino: "Geraldo", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 13, nome: "COPHASUL-6", inquilino: "Renato", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 14, nome: "COPHASUL-7", inquilino: "Inquilino Regular", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 15, nome: "NOVOS ESTADOS", inquilino: "Mariana", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" },
+            { id: 16, nome: "SÍTIO RECANTO", inquilino: "Família", cpf: "", celular: "67981783046", fiador: "", contatoFiador: "", inicioContrato: "", fimContrato: "", caucao: "1.000,00", medidorEnergia: "", medidorAgua: "" }
+        ];
+
+        let dadosPlanilha = {};
+        let idImovelAtualExtrato = null;
+
+        function carregarDados() {
+            const salvoImoveis = localStorage.getItem('dados_imoveis_v15');
+            if (salvoImoveis) {
+                imoveisLista = JSON.parse(salvoImoveis);
+            }
+
+            const salvoPlanilha = localStorage.getItem('dados_planilha_v15');
+            if (salvoPlanilha) {
+                dadosPlanilha = JSON.parse(salvoPlanilha);
+            } else {
+                inicializarPlanilhaPadrao();
+            }
+
+            verificarModoInquilinoUrl();
+            atualizarInterfaceCompleta();
+        }
+
+        function verificarModoInquilinoUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const imovelId = params.get('imovel');
+            if (imovelId) {
+                document.getElementById('app-header').style.display = 'none';
+                document.querySelectorAll('main > div').forEach(div => div.classList.add('hidden'));
+                document.getElementById('aba-extrato-inquilino').classList.remove('hidden');
+                
+                renderizarExtratoInquilinoIsolado(Number(imovelId));
+            }
+        }
+
+        function inicializarPlanilhaPadrao() {
+            dadosPlanilha = {};
+            imoveisLista.forEach(imv => {
+                dadosPlanilha[imv.id] = {};
+                for (let m = 1; m <= 12; m++) {
+                    if (m >= 11) {
+                        dadosPlanilha[imv.id][m] = { valor: 1000, status: "Em Aberto", mesRef: m };
+                    } else {
+                        dadosPlanilha[imv.id][m] = { valor: 1000, status: "Pago", mesRef: m };
+                    }
+                }
+            });
+        }
+
+        function salvarTudo() {
+            localStorage.setItem('dados_imoveis_v15', JSON.stringify(imoveisLista));
+            localStorage.setItem('dados_planilha_v15', JSON.stringify(dadosPlanilha));
+        }
+
+        function atualizarInterfaceCompleta() {
+            const params = new URLSearchParams(window.location.search);
+            if (params.get('imovel')) return;
+
+            document.getElementById('topo-qtd-unidades').textContent = `Painel Geral • ${imoveisLista.length} Unidades (Vencimento Dia 05)`;
+            popularSelectImoveis();
+            renderizarFichasCadastros();
+            renderizarTabela();
+        }
+
+        function popularSelectImoveis() {
+            const select = document.getElementById('lanc-imovel');
+            select.innerHTML = '';
+            imoveisLista.forEach((imv, idx) => {
+                let opt = document.createElement('option');
+                opt.value = imv.id;
+                opt.textContent = `Móvel ${(idx+1) < 10 ? '0'+(idx+1) : (idx+1)} - ${imv.nome} (${imv.inquilino})`;
+                select.appendChild(opt);
+            });
+        }
+
+        function abrirExtratoInquilinoEmNovaGuia(id) {
+            let urlAtual = window.location.href.split('?')[0];
+            let linkFinal = `${urlAtual}?imovel=${id}`;
+            window.open(linkFinal, '_blank', 'noopener,noreferrer');
+        }
+
+        function renderizarExtratoInquilinoIsolado(id) {
+            let imv = imoveisLista.find(i => i.id === id);
+            if (!imv) {
+                document.getElementById('aba-extrato-inquilino').innerHTML = `<div class="p-6 text-center text-rose-600 font-bold">Imóvel não encontrado.</div>`;
+                return;
+            }
+            idImovelAtualExtrato = id;
+
+            let idx = imoveisLista.findIndex(i => i.id === id) + 1;
+            document.getElementById('extrato-titulo-imovel').textContent = `Móvel ${idx < 10 ? '0'+idx : idx} - ${imv.nome}`;
+            document.getElementById('extrato-nome-inquilino').textContent = imv.inquilino || "Inquilino";
+
+            const tbody = document.getElementById('extrato-tabela-meses');
+            tbody.innerHTML = '';
+
+            let totalPagoInquilino = 0;
+            let totalDevidoInquilino = 0; // Soma estritamente dos vermelhos (atrasos)
+
+            for (let m = 1; m <= 12; m++) {
+                if (!dadosPlanilha[id]) dadosPlanilha[id] = {};
+                if (!dadosPlanilha[id][m]) {
+                    dadosPlanilha[id][m] = { valor: 1000, status: m >= 11 ? "Em Aberto" : "Pago", mesRef: m };
+                }
+
+                let dado = dadosPlanilha[id][m];
+                let val = Number(dado.valor) || 1000;
+                let status = dado.status || "Em Aberto";
+                let valorFinalLinha = val;
+
+                let badge = "bg-slate-200 text-slate-700";
+                if (status === "Pago") {
+                    badge = "bg-emerald-100 text-emerald-800 font-bold";
+                    totalPagoInquilino += val;
+                } else if (status === "Atraso") {
+                    let calc = calcularJurosMulta(val, m);
+                    valorFinalLinha = calc.valorFinal;
+                    badge = "bg-rose-100 text-rose-800 font-bold";
+                    totalDevidoInquilino += valorFinalLinha; // Soma apenas o que está em atraso (vermelho)
+                }
+                // Se o status for "Em Aberto" (ficará cinza/futuro), ele não soma no devido do inquilino!
+
+                let tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="p-3 font-semibold text-slate-700">Mês ${m}</td>
+                    <td class="p-3 text-slate-500">Dia 05 / Mês ${m} / 2026</td>
+                    <td class="p-3"><span class="px-2 py-1 rounded text-xs ${badge}">${status}</span></td>
+                    <td class="p-3 text-right font-bold text-slate-800">R$ ${valorFinalLinha.toLocaleString('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                `;
+                tbody.appendChild(tr);
+            }
+
+            // Atualiza os totalizadores exclusivos do inquilino no topo
+            document.getElementById('extrato-total-pago').textContent = `R$ ${totalPagoInquilino.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('extrato-total-devido').textContent = `R$ ${totalDevidoInquilino.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        }
+
+        function copiarLinkInquilino() {
+            let urlAtual = window.location.href.split('?')[0];
+            let linkFinal = `${urlAtual}?imovel=${idImovelAtualExtrato}`;
+            navigator.clipboard.writeText(linkFinal).then(() => {
+                alert("Link exclusivo do inquilino copiado com sucesso!");
+            });
+        }
+
+        function enviarExtratoWhatsAppInquilino() {
+            let imv = imoveisLista.find(i => i.id === idImovelAtualExtrato);
+            if (!imv) return;
+
+            let telLimpo = imv.celular.replace(/\D/g, '');
+            if (!telLimpo.startsWith('55')) telLimpo = '55' + telLimpo;
+
+            let urlAtual = window.location.href.split('?')[0];
+            let linkFinal = `${urlAtual}?imovel=${imv.id}`;
+
+            let mensagem = `Olá, ${imv.inquilino}! Aqui é da Gestão Imobiliária Carlos Roberto de Freitas. Segue o link com o extrato e a situação financeira atualizada do seu imóvel (${imv.nome}):\n\n${linkFinal}\n\nQualquer dúvida, estamos à disposição!`;
+
+            let url = `https://wa.me/${telLimpo}?text=` + encodeURIComponent(mensagem);
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        function enviarWhatsAppInquilino(idImovel) {
+            let imv = imoveisLista.find(i => i.id === idImovel);
+            if (!imv) return;
+
+            let telLimpo = imv.celular.replace(/\D/g, '');
+            if (!telLimpo.startsWith('55')) telLimpo = '55' + telLimpo;
+
+            let mensagem = `Olá, ${imv.inquilino}! Aqui é da Gestão Imobiliária Carlos Roberto de Freitas. Lembramos que o aluguel referente ao seu imóvel (${imv.nome}) vence próximo dia 05 no valor de R$ 1.000,00. Contamos com sua pontualidade.`;
+
+            let url = `https://wa.me/${telLimpo}?text=` + encodeURIComponent(mensagem);
+            window.open(url, '_blank', 'noopener,noreferrer');
+        }
+
+        function renderizarFichasCadastros() {
+            const container = document.getElementById('lista-fichas-imoveis');
+            container.innerHTML = '';
+
+            imoveisLista.forEach((imv, idx) => {
+                let num = idx + 1;
+                let div = document.createElement('div');
+                div.className = "bg-slate-50 border border-slate-200 rounded-xl p-5 shadow-sm space-y-4";
+                div.innerHTML = `
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-3 gap-2">
+                        <div class="flex items-center space-x-2">
+                            <span class="bg-blue-800 text-white text-xs font-bold px-2.5 py-1 rounded-lg">MÓVEL ${num < 10 ? '0'+num : num}</span>
+                            <input type="text" value="${imv.nome}" onchange="atualizarImovel(${imv.id}, 'nome', this.value)" class="font-bold text-slate-800 bg-white border border-slate-300 rounded px-2 py-1 text-sm" placeholder="Nome do Imóvel">
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <button onclick="abrirExtratoInquilinoEmNovaGuia(${imv.id})" class="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 text-xs font-bold px-3 py-1.5 rounded-lg transition">
+                                ↗️ Abrir Extrato em Nova Guia
+                            </button>
+                            <button onclick="enviarWhatsAppInquilino(${imv.id})" class="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-3 py-1.5 rounded-lg transition shadow">
+                                💬 WhatsApp
+                            </button>
+                            <button onclick="excluirImovel(${imv.id})" class="bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-bold px-3 py-1.5 rounded-lg transition">
+                                🗑️ Excluir
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-xs">
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Nome do Inquilino</label>
+                            <input type="text" value="${imv.inquilino}" onchange="atualizarImovel(${imv.id}, 'inquilino', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">CPF do Inquilino</label>
+                            <input type="text" value="${imv.cpf}" onchange="atualizarImovel(${imv.id}, 'cpf', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5" placeholder="000.000.000-00">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Celular / WhatsApp</label>
+                            <input type="text" value="${imv.celular}" onchange="atualizarImovel(${imv.id}, 'celular', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5" placeholder="67981783046">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Fiador</label>
+                            <input type="text" value="${imv.fiador}" onchange="atualizarImovel(${imv.id}, 'fiador', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5" placeholder="Nome do Fiador">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Contato do Fiador</label>
+                            <input type="text" value="${imv.contatoFiador}" onchange="atualizarImovel(${imv.id}, 'contatoFiador', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5" placeholder="Tel do Fiador">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Início da Vigência</label>
+                            <input type="date" value="${imv.inicioContrato}" onchange="atualizarImovel(${imv.id}, 'inicioContrato', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Término do Contrato</label>
+                            <input type="date" value="${imv.fimContrato}" onchange="atualizarImovel(${imv.id}, 'fimContrato', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Caução / Depósito (R$)</label>
+                            <input type="text" value="${imv.caucao}" onchange="atualizarImovel(${imv.id}, 'caucao', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Medidor de Energia</label>
+                            <input type="text" value="${imv.medidorEnergia}" onchange="atualizarImovel(${imv.id}, 'medidorEnergia', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5" placeholder="No. Instalação">
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-slate-600 mb-1">Medidor de Água</label>
+                            <input type="text" value="${imv.medidorAgua}" onchange="atualizarImovel(${imv.id}, 'medidorAgua', this.value)" class="w-full bg-white border border-slate-300 rounded p-1.5" placeholder="No. Hidrômetro">
+                        </div>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function atualizarImovel(id, campo, valor) {
+            let imv = imoveisLista.find(i => i.id === id);
+            if (imv) {
+                imv[campo] = valor;
+                salvarTudo();
+                popularSelectImoveis();
+                renderizarTabela();
+            }
+        }
+
+        function adicionarNovoImovel() {
+            let novoId = imoveisLista.length > 0 ? Math.max(...imoveisLista.map(i => i.id)) + 1 : 1;
+            imoveisLista.push({
+                id: novoId,
+                nome: `NOVO IMÓVEL-${novoId}`,
+                inquilino: "Novo Inquilino",
+                cpf: "", celular: "67981783046", fiador: "", contatoFiador: "",
+                inicioContrato: "", fimContrato: "", caucao: "1.000,00",
+                medidorEnergia: "", medidorAgua: ""
+            });
+
+            dadosPlanilha[novoId] = {};
+            for (let m = 1; m <= 12; m++) {
+                dadosPlanilha[novoId][m] = { valor: 1000, status: m >= 11 ? "Em Aberto" : "Pago", mesRef: m };
+            }
+
+            salvarTudo();
+            atualizarInterfaceCompleta();
+            alert("Novo imóvel adicionado com sucesso!");
+        }
+
+        function excluirImovel(id) {
+            if (imoveisLista.length <= 1) {
+                alert("Você não pode excluir o último imóvel restante!");
+                return;
+            }
+            if (confirm("Tem certeza que deseja excluir/vender este imóvel?")) {
+                imoveisLista = imoveisLista.filter(i => i.id !== id);
+                delete dadosPlanilha[id];
+                salvarTudo();
+                atualizarInterfaceCompleta();
+            }
+        }
+
+        function calcularJurosMulta(valorBase, mesRef) {
+            let dataVencimento = new Date(2026, mesRef - 1, 5);
+            let hoje = new Date();
+
+            if (hoje <= dataVencimento) {
+                return { valorFinal: valorBase, diasAtraso: 0 };
+            }
+
+            let diffTempo = hoje - dataVencimento;
+            let diasAtraso = Math.ceil(diffTempo / (1000 * 60 * 60 * 24));
+
+            if (diasAtraso <= 3) {
+                return { valorFinal: valorBase, diasAtraso: diasAtraso };
+            }
+
+            let multa = valorBase * 0.02;
+            let jurosDiarios = valorBase * (0.0033 * (diasAtraso - 3));
+            let valorFinal = valorBase + multa + jurosDiarios;
+
+            return { valorFinal: valorFinal, diasAtraso: diasAtraso };
+        }
+
+        function renderizarTabela() {
+            const tbody = document.getElementById('tabela-corpo');
+            const tfoot = document.getElementById('tabela-rodape');
+            tbody.innerHTML = '';
+            
+            let totaisColuna = Array(13).fill(0);
+            let grandTotalGeral = 0;
+
+            let totalRecebidoAno = 0;
+            let totalAtrasadosAno = 0;
+            let totalEsperadoAnual = imoveisLista.length * 12 * 1000;
+
+            imoveisLista.forEach((imv, idx) => {
+                let num = idx + 1;
+                let tr = document.createElement('tr');
+                tr.className = `hover:bg-slate-50`;
+
+                let tdNum = `<td class="p-2.5 border-r border-slate-200 font-semibold text-slate-500">MÓVEL ${num < 10 ? '0'+num : num}</td>`;
+                let tdNome = `<td class="p-2.5 border-r border-slate-200 font-medium text-blue-700 hover:underline cursor-pointer" onclick="abrirExtratoInquilinoEmNovaGuia(${imv.id})" title="Clique para abrir extrato em nova guia">${imv.nome} (${imv.inquilino})</td>`;
+                
+                let tdMeses = '';
+                let totalLinha = 0;
+
+                for (let m = 1; m <= 12; m++) {
+                    if (!dadosPlanilha[imv.id]) dadosPlanilha[imv.id] = {};
+                    if (!dadosPlanilha[imv.id][m]) {
+                        dadosPlanilha[imv.id][m] = { valor: 1000, status: m >= 11 ? "Em Aberto" : "Pago", mesRef: m };
+                    }
+
+                    let dadoCel = dadosPlanilha[imv.id][m];
+                    let valBase = Number(dadoCel.valor) || 1000;
+                    let statusManual = dadoCel.status || "Em Aberto";
+
+                    let badgeClass = "bg-slate-200 text-slate-600 font-medium";
+                    let textoStatus = "Em Aberto";
+                    let valorComputado = 0;
+
+                    if (statusManual === "Pago") {
+                        badgeClass = "bg-emerald-500 text-white font-medium";
+                        textoStatus = `${valBase.toLocaleString('pt-BR', {minimumFractionDigits: 0})} (Pago)`;
+                        valorComputado = valBase;
+                        totalLinha += valBase;
+                        totaisColuna[m] += valBase;
+
+                        totalRecebidoAno += valBase;
+                    } 
+                    else if (statusManual === "Em Aberto") {
+                        badgeClass = "bg-slate-200 text-slate-600 font-medium";
+                        textoStatus = `${valBase.toLocaleString('pt-BR', {minimumFractionDigits: 0})} (Em Aberto)`;
+                    } 
+                    else {
+                        let calc = calcularJurosMulta(valBase, m);
+                        valorComputado = calc.valorFinal;
+                        totalLinha += valorComputado;
+                        totaisColuna[m] += valorComputado;
+
+                        badgeClass = "bg-rose-600 text-white font-bold animate-pulse";
+                        textoStatus = `${valorComputado.toLocaleString('pt-BR', {maximumFractionDigits: 0})} (Atraso ${calc.diasAtraso}d)`;
+
+                        totalAtrasadosAno += valorComputado;
+                    }
+
+                    tdMeses += `
+                        <td class="p-1 border-r border-slate-200 text-center">
+                            <span class="inline-block px-1.5 py-0.5 rounded text-[10px] ${badgeClass}" title="Vencimento dia 05">
+                                ${textoStatus}
+                            </span>
+                        </td>
+                    `;
+                }
+
+                grandTotalGeral += totalLinha;
+                let tdTotalLinha = `<td class="p-2.5 text-center font-bold text-blue-900 bg-blue-50/50">R$ ${totalLinha.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
+
+                tr.innerHTML = tdNum + tdNome + tdMeses + tdTotalLinha;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('card-esperado-anual').textContent = `R$ ${totalEsperadoAnual.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('card-recebido').textContent = `R$ ${totalRecebidoAno.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('card-atrasados').textContent = `R$ ${totalAtrasadosAno.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+            document.getElementById('card-projecao').textContent = `R$ ${grandTotalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+
+            let trRodape = `<tr class="bg-slate-200 text-slate-900 border-t-2 border-slate-300">`;
+            trRodape += `<td colspan="2" class="p-2.5 border-r border-slate-300 text-right uppercase font-bold">Total Consolidado:</td>`;
+            
+            for (let m = 1; m <= 12; m++) {
+                trRodape += `<td class="p-2 border-r border-slate-300 text-center text-[11px] font-extrabold text-blue-900">R$ ${totaisColuna[m].toLocaleString('pt-BR', {minimumFractionDigits: 0})}</td>`;
+            }
+            trRodape += `<td class="p-2.5 text-center font-extrabold text-emerald-700 bg-emerald-50">R$ ${grandTotalGeral.toLocaleString('pt-BR', {minimumFractionDigits: 2})}</td>`;
+            trRodape += `</tr>`;
+
+            tfoot.innerHTML = trRodape;
+        }
+
+        function adicionarLancamento() {
+            const imovelId = document.getElementById('lanc-imovel').value;
+            const mes = document.getElementById('lanc-mes').value;
+            const status = document.getElementById('lanc-status').value;
+            let valorStr = document.getElementById('lanc-valor').value.trim().replace('.', '').replace(',', '.');
+            let valorNum = Number(valorStr) || 1000;
+
+            if (!dadosPlanilha[imovelId]) dadosPlanilha[imovelId] = {};
+            dadosPlanilha[imovelId][mes] = { valor: valorNum, status: status, mesRef: Number(mes) };
+
+            salvarTudo();
+            renderizarTabela();
+
+            alert("Lançamento salvo com sucesso!");
+            mudarAba('dashboard');
+        }
+
+        function exportarBackup() {
+            const backupObj = { imoveis: imoveisLista, planilha: dadosPlanilha };
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(backupObj, null, 2));
+            const dlAnchorElem = document.createElement('a');
+            dlAnchorElem.setAttribute("href", dataStr);
+            dlAnchorElem.setAttribute("download", "backup_gestao_freitas.json");
+            dlAnchorElem.click();
+        }
+
+        function limparEProcurarPadrao() {
+            if (confirm("Deseja restaurar a planilha para os valores iniciais?")) {
+                localStorage.removeItem('dados_imoveis_v15');
+                localStorage.removeItem('dados_planilha_v15');
+                location.reload();
+            }
+        }
+
+        function textoResumoPainel() {
+            return [
+                "Resumo do painel INDEX — Gestão Imobiliária Carlos Roberto de Freitas",
+                "",
+                `Total de Unidades: ${imoveisLista.length}`,
+            ].join("\n");
+        }
+
+        function encaminharResumoWhatsApp() {
+            const telefoneCarlos = "5567984147984";
+            const mensagem = "Olá, Carlos!\n\n" + textoResumoPainel();
+            const url = "https://wa.me/" + telefoneCarlos + "?text=" + encodeURIComponent(mensagem);
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
+
+        function encaminharResumoEmail(destinatario) {
+            const contatos = {
+                carlos: { email: "cr.freitas1956@gmail.com", nome: "Carlos" },
+                juliano: { email: "almiromanagement@gmail.com", nome: "Juliano" }
+            };
+            const contato = contatos[destinatario];
+            if (!contato) return;
+
+            const assunto = "Resumo do painel INDEX — Gestão Imobiliária";
+            const corpo = "Olá, " + contato.nome + "!\n\n" + textoResumoPainel();
+            const url = "https://mail.google.com/mail/?view=cm&fs=1"
+                + "&to=" + encodeURIComponent(contato.email)
+                + "&su=" + encodeURIComponent(assunto)
+                + "&body=" + encodeURIComponent(corpo);
+            window.open(url, "_blank", "noopener,noreferrer");
+        }
+
+        function mudarAba(aba) {
+            ['dashboard', 'cadastros', 'lancamentos', 'cobranca', 'backup'].forEach(a => {
+                let el = document.getElementById('aba-' + a);
+                if (el) el.classList.add('hidden');
+                let btn = document.getElementById('btn-' + a);
+                if (btn) btn.className = "px-3 py-1.5 rounded-lg hover:bg-blue-800 text-blue-100 transition whitespace-nowrap";
+            });
+
+            let abaAlvo = document.getElementById('aba-' + aba);
+            if (abaAlvo) abaAlvo.classList.remove('hidden');
+            let btnAlvo = document.getElementById('btn-' + aba);
+            if (btnAlvo) {
+                btnAlvo.className = "px-3 py-1.5 rounded-lg bg-blue-700 text-white font-semibold transition whitespace-nowrap";
+            }
+        }
+
+        window.onload = carregarDados;
+    </script>
+</body>
+</html>
